@@ -1,8 +1,14 @@
 import React from 'react'
+import AuthenticatedNavbar from '../components/AuthenticatedNavbar'
+import Footer from '../components/Footer'
 
-const AuthenticatedLayout = () => {
+const AuthenticatedLayout = ({children}) => {
   return (
-    <div>AuthenticatedLayout</div>
+    <>
+    <AuthenticatedNavbar/>
+         {children}
+    <Footer/>
+    </>
   )
 }
 
