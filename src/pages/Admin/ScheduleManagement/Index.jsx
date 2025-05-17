@@ -1,6 +1,6 @@
 import React from 'react'
 import AuthenticatedLayout from '../../../layout/AuthenticatedLayout'
-const EventInformationAndRegistrationIndex = () => {
+const ScheduleManagementIndex = () => {
   return (
     
     <AuthenticatedLayout>
@@ -84,4 +84,4 @@ const EventInformationAndRegistrationIndex = () => {
   )
 }
 
-export default EventInformationAndRegistrationIndex
+export default ScheduleManagementIndex

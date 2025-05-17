@@ -2,7 +2,7 @@ import React from 'react'
 import AuthenticatedLayout from '../../layout/AuthenticatedLayout'
 import HomeCard from '../../components/HomeCard'
 
-const Home = () => {
+const AdminHome = () => {
   return (
     <AuthenticatedLayout>
        <HomeCard/>
@@ -10,4 +10,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default AdminHome
