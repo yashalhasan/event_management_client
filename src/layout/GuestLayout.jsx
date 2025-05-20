@@ -2,10 +2,10 @@ import React from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
-const GuestLayout = ({children}) => {
+const GuestLayout = ({children,enable_btn=true}) => {
   return (
    <>
-   <Navbar/>
+   <Navbar enable_btn={enable_btn} />
         {children}
    <Footer/>
    </>

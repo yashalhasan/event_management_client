@@ -14,22 +14,22 @@ import ExhibitorHome from './pages/Exhibitor/ExhibitorHome';
 import AnalyticsAndReportingIndex from './pages/Admin/AnalyticsAndReporting/Index';
 import ExpoManagementIndex from './pages/Admin/ExpoManagement/Index';
 import UserManagementIndex from './pages/Admin/UserManagement/Index';
+import Register from './pages/Register';
 
 function App() {
   return (
     <div className="App">
       <Router>
         <Routes>
+
           <Route path="/" element={<Welcome/>} />
+          <Route path="Register" element={<Register/>} />
           <Route path="/admin/home" element={<Home />} />
-          <Route path="/admin/Analytics" element={<AnalyticsAndReportingIndex />} />
-          <Route path="/admin/Exhibitor" element={<ExhibitorManagementIndex />} />
+          <Route path="/admin/AnalyticsReporting" element={<AnalyticsAndReportingIndex />} />
+          <Route path="/admin/ExhibitorMangement" element={<ExhibitorManagementIndex />} />
           <Route path="/admin/ExpoMangement" element={<ExpoManagementIndex />} />
-          <Route path="/admin/Schedule" element={<ScheduleManagementIndex />} />
-          <Route path="/admin/Schedule" element={<UserManagementIndex />} />
-
-
-
+          <Route path="/admin/ScheduleMangement" element={<ScheduleManagementIndex />} />
+          <Route path="/admin/UserMangement" element={<UserManagementIndex />} />
 
           <Route path="/attendee/event" element={<EventInformationAndRegistrationIndex />} />
           <Route path="/attendee/Exhibitor" element={<ExhibitorManagementIndex />} />

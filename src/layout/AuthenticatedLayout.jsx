@@ -6,10 +6,12 @@ const AuthenticatedLayout = ({children}) => {
   return (
     <>
     <AuthenticatedNavbar/>
+    <div className='h-screen  '>
          {children}
+         </div>
     <Footer/>
     </>
   )
-}
+} 
 
-export default AuthenticatedLayout
+export default AuthenticatedLayout 

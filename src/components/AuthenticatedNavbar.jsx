@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const AuthenticatedNavbar = () => {
   return (
@@ -18,10 +19,57 @@ const AuthenticatedNavbar = () => {
     </button>
     <div class="hidden w-full md:block md:w-auto" id="navbar-default">
       <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-        <li>
-          <a href="#" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Home</a>
+        
+        {/* ADMIN */}
+        {/* <li>
+          <Link to="/admin/home" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Home</Link>
         </li>
+        <li>
+          <Link to="/admin/AnalyticsReporting" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Analytics</Link>
+        </li>
+        <li>
+          <Link to="/admin/ExhibitorMangement" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Exhibitor</Link>
+        </li>
+        <li>
+          <Link to="/admin/ExpoMangement" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">ExpoMangement</Link>
+        </li>
+        <li>
+          <Link to="/admin/ScheduleMangement" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">ScheduleMangement</Link>
+        </li>
+        <li>
+          <Link to="/admin/UserMangement" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">UserMangement</Link>
+        </li> */}
+        
+        
+       {/* Attendee  */}
+        {/* <li>
+          <Link to="/attendee/event" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">event</Link>
+        </li>
+        <li>
+          <Link to="/attendee/Exhibitor" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Exhibitor</Link>
+        </li>
+        <li>
+          <Link to="/attendee/Schedule" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Schedule</Link>
+        </li>
+        <li>
+          <Link to="/attendee/Index" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Home</Link>
+        </li>
+        */}
        
+       {/* EXHIBITOR */}
+        {/* <li>
+          <Link to="/Exhibitor/BoothSelect" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">BoothSelect</Link>
+        </li>
+        <li>
+          <Link to="/Exhibitor/Communication" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Communication</Link>
+        </li>
+        <li>
+          <Link to="/Exhibitor/Registration" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Registration</Link>
+        </li>
+        <li>
+          <Link to="/Exhibitor/Home" class="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Home</Link>
+        </li> */}
+
       </ul>
     </div>
   </div>
