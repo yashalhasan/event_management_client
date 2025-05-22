@@ -15,6 +15,9 @@ import AnalyticsAndReportingIndex from './pages/Admin/AnalyticsAndReporting/Inde
 import ExpoManagementIndex from './pages/Admin/ExpoManagement/Index';
 import UserManagementIndex from './pages/Admin/UserManagement/Index';
 import Register from './pages/Register';
+import ExhibitorSearchAndInteractionIndex from './pages/Attendee/ExhibitorSearchAndInteraction/Index';
+import ScheduleManagementAttendeeIndex from './pages/Attendee/ScheduleManagement/Index';
+import AttendeeHome from './pages/Attendee/AttendeeHome';
 
 function App() {
   return (
@@ -32,9 +35,9 @@ function App() {
           <Route path="/admin/UserMangement" element={<UserManagementIndex />} />
 
           <Route path="/attendee/event" element={<EventInformationAndRegistrationIndex />} />
-          <Route path="/attendee/Exhibitor" element={<ExhibitorManagementIndex />} />
-          <Route path="/attendee/Schedule" element={<ScheduleManagementIndex />} />
-          <Route path="/attendee/Index" element={<AttendeeIndex />} />
+          <Route path="/attendee/Exhibitor" element={<ExhibitorSearchAndInteractionIndex />} />
+          <Route path="/attendee/Schedule" element={<ScheduleManagementAttendeeIndex />} />
+          <Route path="/attendee/Index" element={<AttendeeHome />} />
 
           <Route path="/Exhibitor/BoothSelect" element={<BoothSelectionAndManagementIndex/>} />
           <Route path="/Exhibitor/Communication" element={<CommunicationIndex/>} />
