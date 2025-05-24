@@ -1,4 +1,5 @@
 import React from 'react';
+import AuthenticatedLayout from '../../layout/AuthenticatedLayout';
 
 const AttendeeHome = () => {
   // Dummy data (replace with actual counts from backend if needed)
@@ -31,7 +32,7 @@ const AttendeeHome = () => {
   ];
 
   return (
-    <div className="p-6">
+    <AuthenticatedLayout>    <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Welcome, Attendee!</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {cards.map((card, index) => (
@@ -52,6 +53,8 @@ const AttendeeHome = () => {
         ))}
       </div>
     </div>
+    </AuthenticatedLayout>
+
   );
 };
 
