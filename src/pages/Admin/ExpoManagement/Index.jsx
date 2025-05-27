@@ -22,19 +22,50 @@ const mockExpos = [
 
 const ExpoManagementIndex = () => {
   const [expos, setExpos] = useState(mockExpos);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const [newExpo, setNewExpo] = useState({
+    title: '',
+    date: '',
+    location: '',
+    theme: '',
+    description: '',
+  });
 
   const handleEdit = (id) => {
     alert(`Edit expo ID: ${id}`);
   };
 
   const handleDelete = (id) => {
-    // if (confirm('Are you sure you want to delete this expo?')) {
-    //   setExpos(expos.filter((expo) => expo.id !== id));
-    // }
+    if (confirm('Are you sure you want to delete this expo?')) {
+      setExpos(expos.filter((expo) => expo.id !== id));
+    }
   };
 
   const handleCreate = () => {
-    alert('Open create expo form');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewExpo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCreateSubmit = (e) => {
+    e.preventDefault();
+    const newId = expos.length > 0 ? Math.max(...expos.map((e) => e.id)) + 1 : 1;
+    setExpos((prev) => [...prev, { id: newId, ...newExpo }]);
+    setNewExpo({
+      title: '',
+      date: '',
+      location: '',
+      theme: '',
+      description: '',
+    });
+    setIsCreateModalOpen(false);
   };
 
   return (
@@ -97,6 +128,92 @@ const ExpoManagementIndex = () => {
           <h2 className="text-xl font-bold mb-2">Booth Allocation (Coming Soon)</h2>
           <p className="text-gray-500">You will be able to assign booth spaces on a floor plan here.</p>
         </div>
+
+        {/* Create Expo Modal */}
+        {isCreateModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Create New Expo</h2>
+              <form onSubmit={handleCreateSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="title" className="block mb-1 text-gray-700 dark:text-gray-300">Title</label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={newExpo.title}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="date" className="block mb-1 text-gray-700 dark:text-gray-300">Date</label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    value={newExpo.date}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="location" className="block mb-1 text-gray-700 dark:text-gray-300">Location</label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    value={newExpo.location}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="theme" className="block mb-1 text-gray-700 dark:text-gray-300">Theme</label>
+                  <input
+                    type="text"
+                    id="theme"
+                    name="theme"
+                    value={newExpo.theme}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="description" className="block mb-1 text-gray-700 dark:text-gray-300">Description</label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={newExpo.description}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </AuthenticatedLayout>
   );

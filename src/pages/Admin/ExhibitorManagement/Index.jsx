@@ -30,6 +30,15 @@ const mockExhibitors = [
 
 const ExhibitorManagementIndex = () => {
   const [exhibitors, setExhibitors] = useState(mockExhibitors);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const [newExhibitor, setNewExhibitor] = useState({
+    name: '',
+    product: '',
+    category: '',
+    status: 'pending',
+    booth: null,
+  });
 
   const updateStatus = (id, newStatus) => {
     setExhibitors(prev =>
@@ -46,10 +55,42 @@ const ExhibitorManagementIndex = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewExhibitor(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCreateSubmit = (e) => {
+    e.preventDefault();
+    const newId = Math.max(...exhibitors.map(e => e.id)) + 1;
+    setExhibitors(prev => [...prev, { id: newId, ...newExhibitor }]);
+    setNewExhibitor({
+      name: '',
+      product: '',
+      category: '',
+      status: 'pending',
+      booth: null,
+    });
+    setIsCreateModalOpen(false);
+  };
+
   return (
     <AuthenticatedLayout>
       <div className="p-6">
-        <h1 className="text-2xl font-semibold mb-4">Exhibitor Management</h1>
+        {/* Header with Create button on top right */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-semibold">Exhibitor Management</h1>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          >
+            + Create
+          </button>
+        </div>
+
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -106,6 +147,75 @@ const ExhibitorManagementIndex = () => {
             </tbody>
           </table>
         </div>
+
+        {isCreateModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+                Create New Exhibitor
+              </h2>
+              <form onSubmit={handleCreateSubmit} className="space-y-4">
+                <div>
+                  <label className="block mb-1 text-gray-700 dark:text-gray-300" htmlFor="name">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={newExhibitor.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-gray-700 dark:text-gray-300" htmlFor="product">
+                    Product
+                  </label>
+                  <input
+                    type="text"
+                    id="product"
+                    name="product"
+                    value={newExhibitor.product}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-gray-700 dark:text-gray-300" htmlFor="category">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    id="category"
+                    name="category"
+                    value={newExhibitor.category}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </AuthenticatedLayout>
   );
