@@ -24,7 +24,7 @@ const Welcome = () => {
   })
 
   return (
-    <GuestLayout>
+    <GuestLayout enable_btn={false}>
       <section className="bg-gray-50 dark:bg-gray-900">
         <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 grid lg:grid-cols-2 gap-8 lg:gap-16">
           <div className="flex flex-col justify-center">

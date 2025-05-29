@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '../../../layout/AuthenticatedLayout';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const initialUsers = [
   {
@@ -25,78 +27,88 @@ const initialUsers = [
 const UserManagementIndex = () => {
   const [users, setUsers] = useState(initialUsers);
   const [modal, setModal] = useState({ type: null, user: null });
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
-  // Open create modal
   const openCreateModal = () => {
     setFormData({ name: '', email: '', password: '' });
     setModal({ type: 'create', user: null });
   };
 
-  // Open view modal
-  const openViewModal = (user) => {
-    setModal({ type: 'view', user });
-  };
-
-  // Open edit modal
+  const openViewModal = (user) => setModal({ type: 'view', user });
   const openEditModal = (user) => {
     setFormData({ name: user.name, email: user.email, password: '' });
     setModal({ type: 'edit', user });
   };
 
-  // Close any modal
   const closeModal = () => {
+    setFormData({ name: '', email: '', password: '' });
     setModal({ type: null, user: null });
   };
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle create user
   const handleCreateSubmit = (e) => {
     e.preventDefault();
     const newUser = {
       id: users.length ? Math.max(...users.map(u => u.id)) + 1 : 1,
       name: formData.name,
       email: formData.email,
-      password: formData.password ? '••••••••' : '••••••••', // just mask
+      password: '••••••••',
     };
     setUsers(prev => [...prev, newUser]);
     closeModal();
   };
 
-  // Handle edit user
   const handleEditSubmit = (e) => {
     e.preventDefault();
     setUsers(prev =>
-      prev.map(u =>
-        u.id === modal.user.id
-          ? { ...u, name: formData.name, email: formData.email, password: formData.password ? '••••••••' : u.password }
-          : u
+      prev.map(user =>
+        user.id === modal.user.id
+          ? {
+              ...user,
+              name: formData.name,
+              email: formData.email,
+              password: formData.password ? '••••••••' : user.password,
+            }
+          : user
       )
     );
     closeModal();
   };
 
-  // Handle delete user
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(u => u.id !== id));
+      setUsers(users.filter(user => user.id !== id));
     }
   };
-
+  const formik = useFormik({
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required('Name is required'),
+      email: Yup.string().email('Invalid email').required('Email is required'),
+      password: Yup.string().when([], {
+        is: () => modal.type === 'create',
+        then: () => Yup.string().required('Password is required'),
+        otherwise: () => Yup.string(),
+      }),
+    }),
+    onSubmit: (values) => {
+      modal.type === 'create' ? handleCreateSubmit(values) : handleEditSubmit(values);
+    },
+  });
   return (
     <AuthenticatedLayout>
       <div className="p-6">
+        {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-semibold">User Management</h1>
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">User Management</h1>
           <button
             onClick={openCreateModal}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -105,6 +117,7 @@ const UserManagementIndex = () => {
           </button>
         </div>
 
+        {/* Table */}
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -176,60 +189,73 @@ const UserManagementIndex = () => {
                   <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
                     {modal.type === 'create' ? 'Create User' : 'Edit User'}
                   </h2>
-                  <form onSubmit={modal.type === 'create' ? handleCreateSubmit : handleEditSubmit} className="space-y-4">
-                    <div>
-                      <label htmlFor="name" className="block mb-1 text-gray-700 dark:text-gray-300">Name</label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block mb-1 text-gray-700 dark:text-gray-300">Email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="password" className="block mb-1 text-gray-700 dark:text-gray-300">
-                        Password {modal.type === 'edit' && <small>(leave blank to keep current)</small>}
-                      </label>
-                      <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        type="button"
-                        onClick={closeModal}
-                        className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-                      >
-                        {modal.type === 'create' ? 'Create' : 'Save'}
-                      </button>
-                    </div>
-                  </form>
+                  <form onSubmit={formik.handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="name" className="block mb-1 text-gray-700 dark:text-gray-300">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.name}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.name && formik.errors.name && (
+          <div className="text-red-500 text-sm">{formik.errors.name}</div>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block mb-1 text-gray-700 dark:text-gray-300">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.email}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.email && formik.errors.email && (
+          <div className="text-red-500 text-sm">{formik.errors.email}</div>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="password" className="block mb-1 text-gray-700 dark:text-gray-300">
+          Password {modal.type === 'edit' && <small>(leave blank to keep current)</small>}
+        </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.password}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.password && formik.errors.password && (
+          <div className="text-red-500 text-sm">{formik.errors.password}</div>
+        )}
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <button
+          type="button"
+          onClick={closeModal}
+          className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        >
+          {modal.type === 'create' ? 'Create' : 'Save'}
+        </button>
+      </div>
+    </form>
                 </>
               )}
             </div>

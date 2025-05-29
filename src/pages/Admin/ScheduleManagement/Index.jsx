@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '../../../layout/AuthenticatedLayout';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+
 
 const mockSchedule = [
   {
@@ -70,6 +73,30 @@ const ScheduleManagementIndex = () => {
     setIsCreateModalOpen(false);
   };
 
+  const formik = useFormik({
+    initialValues: {
+      time: '',
+      session: '',
+      speaker: '',
+      topic: '',
+      location: '',
+    },
+    validationSchema: Yup.object({
+      time: Yup.string()
+        .required('Time Slot is required')
+        .matches(
+          /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s?(AM|PM)\s?-\s?([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s?(AM|PM)$/i,
+          'Use format: e.g. 02:00 PM - 03:00 PM'
+        ),
+      session: Yup.string().required('Session is required'),
+      speaker: Yup.string().required('Speaker is required'),
+      topic: Yup.string().required('Topic is required'),
+      location: Yup.string().required('Location is required'),
+    }),
+    onSubmit: (values) => {
+      handleCreateSubmit(values);
+    },
+  });
   return (
     <AuthenticatedLayout>
       <div className="p-6">
@@ -125,84 +152,104 @@ const ScheduleManagementIndex = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Create New Schedule</h2>
-              <form onSubmit={handleCreateSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="time" className="block mb-1 text-gray-700 dark:text-gray-300">Time Slot</label>
-                  <input
-                    type="text"
-                    id="time"
-                    name="time"
-                    value={newSchedule.time}
-                    onChange={handleInputChange}
-                    placeholder="e.g. 02:00 PM - 03:00 PM"
-                    required
-                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="session" className="block mb-1 text-gray-700 dark:text-gray-300">Session</label>
-                  <input
-                    type="text"
-                    id="session"
-                    name="session"
-                    value={newSchedule.session}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="speaker" className="block mb-1 text-gray-700 dark:text-gray-300">Speaker</label>
-                  <input
-                    type="text"
-                    id="speaker"
-                    name="speaker"
-                    value={newSchedule.speaker}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="topic" className="block mb-1 text-gray-700 dark:text-gray-300">Topic</label>
-                  <input
-                    type="text"
-                    id="topic"
-                    name="topic"
-                    value={newSchedule.topic}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="location" className="block mb-1 text-gray-700 dark:text-gray-300">Location</label>
-                  <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    value={newSchedule.location}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-                  >
-                    Create
-                  </button>
-                </div>
-              </form>
+              <form onSubmit={formik.handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="time" className="block mb-1 text-gray-700 dark:text-gray-300">Time Slot</label>
+        <input
+          type="text"
+          id="time"
+          name="time"
+          placeholder="e.g. 02:00 PM - 03:00 PM"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.time}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.time && formik.errors.time && (
+          <div className="text-red-500 text-sm">{formik.errors.time}</div>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="session" className="block mb-1 text-gray-700 dark:text-gray-300">Session</label>
+        <input
+          type="text"
+          id="session"
+          name="session"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.session}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.session && formik.errors.session && (
+          <div className="text-red-500 text-sm">{formik.errors.session}</div>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="speaker" className="block mb-1 text-gray-700 dark:text-gray-300">Speaker</label>
+        <input
+          type="text"
+          id="speaker"
+          name="speaker"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.speaker}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.speaker && formik.errors.speaker && (
+          <div className="text-red-500 text-sm">{formik.errors.speaker}</div>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="topic" className="block mb-1 text-gray-700 dark:text-gray-300">Topic</label>
+        <input
+          type="text"
+          id="topic"
+          name="topic"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.topic}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.topic && formik.errors.topic && (
+          <div className="text-red-500 text-sm">{formik.errors.topic}</div>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="location" className="block mb-1 text-gray-700 dark:text-gray-300">Location</label>
+        <input
+          type="text"
+          id="location"
+          name="location"
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.location}
+          className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white"
+        />
+        {formik.touched.location && formik.errors.location && (
+          <div className="text-red-500 text-sm">{formik.errors.location}</div>
+        )}
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <button
+          type="button"
+          onClick={() => setIsCreateModalOpen(false)}
+          className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Create
+        </button>
+      </div>
+    </form>
             </div>
           </div>
         )}

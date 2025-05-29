@@ -32,20 +32,24 @@ const ExpoManagementIndex = () => {
     description: '',
   });
 
+  // Edit handler (currently just an alert)
   const handleEdit = (id) => {
     alert(`Edit expo ID: ${id}`);
   };
 
+  // Delete handler with confirmation
   const handleDelete = (id) => {
-    if (confirm('Are you sure you want to delete this expo?')) {
+    if (window.confirm('Are you sure you want to delete this expo?')) {
       setExpos(expos.filter((expo) => expo.id !== id));
     }
   };
 
+  // Show create modal
   const handleCreate = () => {
     setIsCreateModalOpen(true);
   };
 
+  // Handle form inputs for new expo
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewExpo((prev) => ({
@@ -54,6 +58,7 @@ const ExpoManagementIndex = () => {
     }));
   };
 
+  // Handle form submit to add new expo
   const handleCreateSubmit = (e) => {
     e.preventDefault();
     const newId = expos.length > 0 ? Math.max(...expos.map((e) => e.id)) + 1 : 1;
@@ -71,6 +76,7 @@ const ExpoManagementIndex = () => {
   return (
     <AuthenticatedLayout>
       <div className="p-6">
+        {/* Header with Create Button */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold">Expo Management</h1>
           <button
@@ -80,6 +86,8 @@ const ExpoManagementIndex = () => {
             Create Expo
           </button>
         </div>
+
+        {/* Expo Table */}
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
