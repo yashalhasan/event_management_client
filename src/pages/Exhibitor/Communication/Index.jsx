@@ -1,11 +1,145 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '../../../layout/AuthenticatedLayout';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+
+const initialMessages = [
+  {
+    id: 1,
+    from: 'Ravi (Exhibitor)',
+    to: 'Alisha (Attendee)',
+    subject: 'Product Inquiry',
+    date: 'May 21, 2025',
+  },
+  {
+    id: 2,
+    from: 'Event Support',
+    to: 'Bright Displays',
+    subject: 'Booth Setup Assistance',
+    date: 'May 20, 2025',
+  },
+];
+
+const validationSchema = Yup.object({
+  from: Yup.string().required('Sender is required'),
+  to: Yup.string().required('Recipient is required'),
+  subject: Yup.string().required('Subject is required'),
+  message: Yup.string().required('Message body is required'),
+});
 
 const CommunicationIndex = () => {
+  const [messages, setMessages] = useState(initialMessages);
+  const [showModal, setShowModal] = useState(false);
+
+  const formik = useFormik({
+    initialValues: {
+      from: '',
+      to: '',
+      subject: '',
+      message: '',
+    },
+    validationSchema,
+    onSubmit: (values, { resetForm }) => {
+      const newMessage = {
+        id: messages.length + 1,
+        from: values.from,
+        to: values.to,
+        subject: values.subject,
+        date: new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }),
+      };
+      setMessages([newMessage, ...messages]);
+      resetForm();
+      setShowModal(false);
+    },
+  });
+
   return (
     <AuthenticatedLayout>
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg p-4">
-        <h2 className="text-xl font-bold mb-4">Communication Center</h2>
+      <div className="p-4 relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Communication Center</h2>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Compose Message
+          </button>
+        </div>
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-lg w-full max-w-lg relative">
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white"
+              >
+                ✕
+              </button>
+              <h3 className="text-xl font-semibold mb-4 dark:text-white">Compose Message</h3>
+              <form onSubmit={formik.handleSubmit} className="space-y-4">
+                {[
+                  { label: 'From', name: 'from' },
+                  { label: 'To', name: 'to' },
+                  { label: 'Subject', name: 'subject' },
+                ].map(({ label, name }) => (
+                  <div key={name}>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {label}
+                    </label>
+                    <input
+                      type="text"
+                      name={name}
+                      value={formik.values[name]}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                    {formik.touched[name] && formik.errors[name] && (
+                      <p className="text-red-500 text-sm">{formik.errors[name]}</p>
+                    )}
+                  </div>
+                ))}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Message
+                  </label>
+                  <textarea
+                    name="message"
+                    rows="4"
+                    value={formik.values.message}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  ></textarea>
+                  {formik.touched.message && formik.errors.message && (
+                    <p className="text-red-500 text-sm">{formik.errors.message}</p>
+                  )}
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                  >
+                    Send
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
@@ -17,26 +151,25 @@ const CommunicationIndex = () => {
             </tr>
           </thead>
           <tbody>
-            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-              <td className="px-6 py-4">Ravi (Exhibitor)</td>
-              <td className="px-6 py-4">Alisha (Attendee)</td>
-              <td className="px-6 py-4">Product Inquiry</td>
-              <td className="px-6 py-4">May 21, 2025</td>
-              <td className="px-6 py-4 text-right">
-                <a href="#" className="text-blue-600 dark:text-blue-500 hover:underline mr-2">View</a>
-                <a href="#" className="text-green-600 dark:text-green-400 hover:underline">Reply</a>
-              </td>
-            </tr>
-            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-              <td className="px-6 py-4">Event Support</td>
-              <td className="px-6 py-4">Bright Displays</td>
-              <td className="px-6 py-4">Booth Setup Assistance</td>
-              <td className="px-6 py-4">May 20, 2025</td>
-              <td className="px-6 py-4 text-right">
-                <a href="#" className="text-blue-600 dark:text-blue-500 hover:underline mr-2">View</a>
-                <a href="#" className="text-green-600 dark:text-green-400 hover:underline">Reply</a>
-              </td>
-            </tr>
+            {messages.map((msg) => (
+              <tr
+                key={msg.id}
+                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+              >
+                <td className="px-6 py-4">{msg.from}</td>
+                <td className="px-6 py-4">{msg.to}</td>
+                <td className="px-6 py-4">{msg.subject}</td>
+                <td className="px-6 py-4">{msg.date}</td>
+                <td className="px-6 py-4 text-right">
+                  <a href="#" className="text-blue-600 dark:text-blue-500 hover:underline mr-2">
+                    View
+                  </a>
+                  <a href="#" className="text-green-600 dark:text-green-400 hover:underline">
+                    Reply
+                  </a>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

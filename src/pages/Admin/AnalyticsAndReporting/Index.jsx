@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '../../../layout/AuthenticatedLayout';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const AnalyticsAndReportingIndex = () => {
   const [analyticsData, setAnalyticsData] = useState([
@@ -27,34 +29,63 @@ const AnalyticsAndReportingIndex = () => {
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    session: '',
-    attendees: '',
-    boothTraffic: '',
-    engagementScore: '',
+  const [editingSession, setEditingSession] = useState(null); // null = creating new
+
+  const validationSchema = Yup.object({
+    session: Yup.string().required('Session name is required'),
+    attendees: Yup.number()
+      .required('Attendees count is required')
+      .min(0, 'Cannot be negative'),
+    boothTraffic: Yup.number()
+      .required('Booth traffic is required')
+      .min(0, 'Cannot be negative'),
+    engagementScore: Yup.number()
+      .required('Engagement score is required')
+      .min(0, 'Cannot be negative')
+      .max(100, 'Score cannot exceed 100'),
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const formik = useFormik({
+    enableReinitialize: true, // important for editing
+    initialValues: editingSession || {
+      session: '',
+      attendees: '',
+      boothTraffic: '',
+      engagementScore: '',
+    },
+    validationSchema,
+    onSubmit: (values) => {
+      if (editingSession) {
+        // Update existing entry
+        setAnalyticsData((prev) =>
+          prev.map((item) =>
+            item.id === editingSession.id ? { ...item, ...values, attendees: Number(values.attendees), boothTraffic: Number(values.boothTraffic), engagementScore: Number(values.engagementScore) } : item
+          )
+        );
+      } else {
+        // Add new entry
+        const newEntry = {
+          id: analyticsData.length + 1,
+          ...values,
+          attendees: Number(values.attendees),
+          boothTraffic: Number(values.boothTraffic),
+          engagementScore: Number(values.engagementScore),
+        };
+        setAnalyticsData((prev) => [...prev, newEntry]);
+      }
+      setIsModalOpen(false);
+      setEditingSession(null);
+    },
+  });
+
+  const openCreateModal = () => {
+    setEditingSession(null);
+    setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newEntry = {
-      id: analyticsData.length + 1,
-      session: formData.session,
-      attendees: parseInt(formData.attendees),
-      boothTraffic: parseInt(formData.boothTraffic),
-      engagementScore: parseInt(formData.engagementScore),
-    };
-    console.log('📦 Created Entry:', newEntry);
-    setAnalyticsData([...analyticsData, newEntry]);
-    setFormData({ session: '', attendees: '', boothTraffic: '', engagementScore: '' });
-    setIsModalOpen(false);
+  const openEditModal = (session) => {
+    setEditingSession(session);
+    setIsModalOpen(true);
   };
 
   return (
@@ -64,7 +95,7 @@ const AnalyticsAndReportingIndex = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold">Analytics & Reporting</h1>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={openCreateModal}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
           >
             + Create
@@ -80,7 +111,7 @@ const AnalyticsAndReportingIndex = () => {
                 <th className="px-6 py-3">Attendees</th>
                 <th className="px-6 py-3">Booth Traffic</th>
                 <th className="px-6 py-3">Engagement Score</th>
-                <th className="px-6 py-3 text-right">Details</th>
+                <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -93,7 +124,13 @@ const AnalyticsAndReportingIndex = () => {
                   <td className="px-6 py-4">{data.attendees}</td>
                   <td className="px-6 py-4">{data.boothTraffic}</td>
                   <td className="px-6 py-4">{data.engagementScore} / 100</td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right space-x-2">
+                    <button
+                      onClick={() => openEditModal(data)}
+                      className="text-yellow-500 hover:underline"
+                    >
+                      Edit
+                    </button>
                     <a href="#" className="text-blue-600 hover:underline">View Report</a>
                   </td>
                 </tr>
@@ -105,57 +142,91 @@ const AnalyticsAndReportingIndex = () => {
         {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Create New Session</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-auto">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+                {editingSession ? 'Edit Session' : 'Create New Session'}
+              </h2>
+              <form onSubmit={formik.handleSubmit} className="space-y-4">
+                {/* Session Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Session Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Session Name
+                  </label>
                   <input
                     type="text"
                     name="session"
-                    value={formData.session}
-                    onChange={handleChange}
-                    required
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.session}
                     className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
+                  {formik.touched.session && formik.errors.session && (
+                    <p className="text-red-500 text-sm">{formik.errors.session}</p>
+                  )}
                 </div>
+
+                {/* Attendees */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Attendees</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Attendees
+                  </label>
                   <input
                     type="number"
                     name="attendees"
-                    value={formData.attendees}
-                    onChange={handleChange}
-                    required
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.attendees}
                     className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
+                  {formik.touched.attendees && formik.errors.attendees && (
+                    <p className="text-red-500 text-sm">{formik.errors.attendees}</p>
+                  )}
                 </div>
+
+                {/* Booth Traffic */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Booth Traffic</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Booth Traffic
+                  </label>
                   <input
                     type="number"
                     name="boothTraffic"
-                    value={formData.boothTraffic}
-                    onChange={handleChange}
-                    required
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.boothTraffic}
                     className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
+                  {formik.touched.boothTraffic && formik.errors.boothTraffic && (
+                    <p className="text-red-500 text-sm">{formik.errors.boothTraffic}</p>
+                  )}
                 </div>
+
+                {/* Engagement Score */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Engagement Score</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Engagement Score
+                  </label>
                   <input
                     type="number"
                     name="engagementScore"
-                    value={formData.engagementScore}
-                    onChange={handleChange}
-                    required
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.engagementScore}
                     className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
+                  {formik.touched.engagementScore && formik.errors.engagementScore && (
+                    <p className="text-red-500 text-sm">{formik.errors.engagementScore}</p>
+                  )}
                 </div>
+
+                {/* Buttons */}
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setEditingSession(null);
+                    }}
                     className="px-4 py-2 border rounded text-gray-700 dark:text-gray-300"
                   >
                     Cancel
@@ -164,7 +235,7 @@ const AnalyticsAndReportingIndex = () => {
                     type="submit"
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
                   >
-                    Create
+                    {editingSession ? 'Update' : 'Create'}
                   </button>
                 </div>
               </form>
