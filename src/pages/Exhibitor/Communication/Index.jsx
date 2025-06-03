@@ -9,6 +9,7 @@ const initialMessages = [
     from: 'Ravi (Exhibitor)',
     to: 'Alisha (Attendee)',
     subject: 'Product Inquiry',
+    message: 'Can you provide more details about your product?',
     date: 'May 21, 2025',
   },
   {
@@ -16,6 +17,7 @@ const initialMessages = [
     from: 'Event Support',
     to: 'Bright Displays',
     subject: 'Booth Setup Assistance',
+    message: 'We will assist you with the booth setup on May 23.',
     date: 'May 20, 2025',
   },
 ];
@@ -30,9 +32,27 @@ const validationSchema = Yup.object({
 const CommunicationIndex = () => {
   const [messages, setMessages] = useState(initialMessages);
   const [showModal, setShowModal] = useState(false);
+  const [editingMessage, setEditingMessage] = useState(null);
+
+  const openCreateModal = () => {
+    setEditingMessage(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (msg) => {
+    setEditingMessage(msg);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    formik.resetForm();
+    setEditingMessage(null);
+    setShowModal(false);
+  };
 
   const formik = useFormik({
-    initialValues: {
+    enableReinitialize: true,
+    initialValues: editingMessage || {
       from: '',
       to: '',
       subject: '',
@@ -40,19 +60,27 @@ const CommunicationIndex = () => {
     },
     validationSchema,
     onSubmit: (values, { resetForm }) => {
-      const newMessage = {
-        id: messages.length + 1,
-        from: values.from,
-        to: values.to,
-        subject: values.subject,
-        date: new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }),
-      };
-      setMessages([newMessage, ...messages]);
+      if (editingMessage) {
+        // Update existing message
+        const updatedMessages = messages.map((msg) =>
+          msg.id === editingMessage.id ? { ...msg, ...values } : msg
+        );
+        setMessages(updatedMessages);
+      } else {
+        // Create new message
+        const newMessage = {
+          id: messages.length + 1,
+          ...values,
+          date: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        };
+        setMessages([newMessage, ...messages]);
+      }
       resetForm();
+      setEditingMessage(null);
       setShowModal(false);
     },
   });
@@ -63,7 +91,7 @@ const CommunicationIndex = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Communication Center</h2>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openCreateModal}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Compose Message
@@ -75,12 +103,14 @@ const CommunicationIndex = () => {
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-lg w-full max-w-lg relative">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={closeModal}
                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white"
               >
                 ✕
               </button>
-              <h3 className="text-xl font-semibold mb-4 dark:text-white">Compose Message</h3>
+              <h3 className="text-xl font-semibold mb-4 dark:text-white">
+                {editingMessage ? 'Edit Message' : 'Compose Message'}
+              </h3>
               <form onSubmit={formik.handleSubmit} className="space-y-4">
                 {[
                   { label: 'From', name: 'from' },
@@ -115,7 +145,7 @@ const CommunicationIndex = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  ></textarea>
+                  />
                   {formik.touched.message && formik.errors.message && (
                     <p className="text-red-500 text-sm">{formik.errors.message}</p>
                   )}
@@ -123,7 +153,7 @@ const CommunicationIndex = () => {
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={closeModal}
                     className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
                   >
                     Cancel
@@ -132,7 +162,7 @@ const CommunicationIndex = () => {
                     type="submit"
                     className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                   >
-                    Send
+                    {editingMessage ? 'Update' : 'Send'}
                   </button>
                 </div>
               </form>
@@ -140,6 +170,7 @@ const CommunicationIndex = () => {
           </div>
         )}
 
+        {/* Messages Table */}
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
@@ -161,11 +192,14 @@ const CommunicationIndex = () => {
                 <td className="px-6 py-4">{msg.subject}</td>
                 <td className="px-6 py-4">{msg.date}</td>
                 <td className="px-6 py-4 text-right">
-                  <a href="#" className="text-blue-600 dark:text-blue-500 hover:underline mr-2">
+                  <button
+                    onClick={() => openEditModal(msg)}
+                    className="text-green-600 dark:text-green-400 hover:underline mr-2"
+                  >
+                    Edit
+                  </button>
+                  <a href="#" className="text-blue-600 dark:text-blue-500 hover:underline">
                     View
-                  </a>
-                  <a href="#" className="text-green-600 dark:text-green-400 hover:underline">
-                    Reply
                   </a>
                 </td>
               </tr>

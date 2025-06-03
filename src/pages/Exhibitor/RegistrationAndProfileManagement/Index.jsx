@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import AuthenticatedLayout from '../../../layout/AuthenticatedLayout';  // Ensure you have this layout component
+import AuthenticatedLayout from '../../../layout/AuthenticatedLayout';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
-// Initial dummy data for companies
 const initialCompanies = [
   {
     id: 1,
@@ -23,7 +22,6 @@ const initialCompanies = [
   },
 ];
 
-// Yup validation schema for form validation
 const CompanySchema = Yup.object().shape({
   name: Yup.string().required('Company Name is required'),
   products: Yup.string().required('Products / Services are required'),
@@ -32,139 +30,115 @@ const CompanySchema = Yup.object().shape({
   contact: Yup.string().required('Contact Info is required'),
 });
 
-const RegistrationAndProfileManagementIndex = () => {
+const CompanyManagementPage = () => {
   const [companies, setCompanies] = useState(initialCompanies);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(null);
 
-  const handleAddCompany = (values, { resetForm }) => {
-    const newCompany = {
-      id: companies.length + 1,
-      name: values.name,
-      products: values.products,
-      logo: values.logo,
-      description: values.description,
-      contact: values.contact,
-    };
-    setCompanies([...companies, newCompany]);
-    resetForm();
+  const openCreateModal = () => {
+    setEditingCompany(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (company) => {
+    setEditingCompany(company);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
     setIsModalOpen(false);
+    setEditingCompany(null);
+  };
+
+  const handleSubmit = (values, { resetForm }) => {
+    if (editingCompany) {
+      setCompanies((prev) =>
+        prev.map((comp) => (comp.id === editingCompany.id ? { ...comp, ...values } : comp))
+      );
+    } else {
+      const newCompany = {
+        id: companies.length + 1,
+        ...values,
+      };
+      setCompanies((prev) => [...prev, newCompany]);
+    }
+    resetForm();
+    closeModal();
   };
 
   return (
     <AuthenticatedLayout>
       <div className="p-4">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Create New Company
-        </button>
+        {/* Header with Right-Aligned Button */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Company Registration & Profile Management</h2>
+          <button
+            onClick={openCreateModal}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Create New Company
+          </button>
+        </div>
 
-        {/* Modal for adding new company */}
+        {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg shadow-lg relative">
-              <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Create New Company</h3>
+              <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+                {editingCompany ? 'Edit Company' : 'Create New Company'}
+              </h3>
 
               <Formik
-                initialValues={{
-                  name: '',
-                  products: '',
-                  logo: '',
-                  description: '',
-                  contact: '',
-                }}
+                enableReinitialize
+                initialValues={
+                  editingCompany || {
+                    name: '',
+                    products: '',
+                    logo: '',
+                    description: '',
+                    contact: '',
+                  }
+                }
                 validationSchema={CompanySchema}
-                onSubmit={handleAddCompany}
+                onSubmit={handleSubmit}
               >
                 {({ isSubmitting }) => (
                   <Form className="space-y-4">
-                    <div>
-                      <label htmlFor="name" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
-                        Company Name
-                      </label>
-                      <Field
-                        name="name"
-                        type="text"
-                        className="w-full border border-gray-300 rounded px-3 py-2 dark:bg-gray-700 dark:text-white"
-                      />
-                      <ErrorMessage
-                        name="name"
-                        component="div"
-                        className="text-red-600 text-sm mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="products" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
-                        Products / Services
-                      </label>
-                      <Field
-                        name="products"
-                        type="text"
-                        className="w-full border border-gray-300 rounded px-3 py-2 dark:bg-gray-700 dark:text-white"
-                      />
-                      <ErrorMessage
-                        name="products"
-                        component="div"
-                        className="text-red-600 text-sm mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="logo" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
-                        Logo URL
-                      </label>
-                      <Field
-                        name="logo"
-                        type="url"
-                        className="w-full border border-gray-300 rounded px-3 py-2 dark:bg-gray-700 dark:text-white"
-                      />
-                      <ErrorMessage
-                        name="logo"
-                        component="div"
-                        className="text-red-600 text-sm mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="description" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
-                        Description
-                      </label>
-                      <Field
-                        name="description"
-                        as="textarea"
-                        rows="3"
-                        className="w-full border border-gray-300 rounded px-3 py-2 dark:bg-gray-700 dark:text-white"
-                      />
-                      <ErrorMessage
-                        name="description"
-                        component="div"
-                        className="text-red-600 text-sm mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="contact" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
-                        Contact Info
-                      </label>
-                      <Field
-                        name="contact"
-                        as="textarea"
-                        rows="2"
-                        className="w-full border border-gray-300 rounded px-3 py-2 dark:bg-gray-700 dark:text-white"
-                      />
-                      <ErrorMessage
-                        name="contact"
-                        component="div"
-                        className="text-red-600 text-sm mt-1"
-                      />
-                    </div>
+                    {['name', 'products', 'logo', 'description', 'contact'].map((field) => (
+                      <div key={field}>
+                        <label
+                          htmlFor={field}
+                          className="block mb-1 font-medium text-gray-700 dark:text-gray-300"
+                        >
+                          {field === 'name'
+                            ? 'Company Name'
+                            : field === 'products'
+                            ? 'Products / Services'
+                            : field === 'logo'
+                            ? 'Logo URL'
+                            : field === 'description'
+                            ? 'Description'
+                            : 'Contact Info'}
+                        </label>
+                        <Field
+                          name={field}
+                          as={field === 'description' || field === 'contact' ? 'textarea' : 'input'}
+                          rows={field === 'description' ? 3 : field === 'contact' ? 2 : undefined}
+                          type="text"
+                          className="w-full border border-gray-300 rounded px-3 py-2 dark:bg-gray-700 dark:text-white"
+                        />
+                        <ErrorMessage
+                          name={field}
+                          component="div"
+                          className="text-red-600 text-sm mt-1"
+                        />
+                      </div>
+                    ))}
 
                     <div className="flex justify-end space-x-2">
                       <button
                         type="button"
-                        onClick={() => setIsModalOpen(false)}
+                        onClick={closeModal}
                         className="px-4 py-2 rounded bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
                       >
                         Cancel
@@ -174,7 +148,7 @@ const RegistrationAndProfileManagementIndex = () => {
                         disabled={isSubmitting}
                         className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {isSubmitting ? 'Saving...' : 'Save'}
+                        {isSubmitting ? 'Saving...' : editingCompany ? 'Update' : 'Save'}
                       </button>
                     </div>
                   </Form>
@@ -184,17 +158,17 @@ const RegistrationAndProfileManagementIndex = () => {
           </div>
         )}
 
-        {/* Companies table */}
+        {/* Table */}
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
-                <th scope="col" className="px-6 py-3">Company Name</th>
-                <th scope="col" className="px-6 py-3">Products / Services</th>
-                <th scope="col" className="px-6 py-3">Logo</th>
-                <th scope="col" className="px-6 py-3">Description</th>
-                <th scope="col" className="px-6 py-3">Contact Info</th>
-                <th scope="col" className="px-6 py-3"><span className="sr-only">Edit</span></th>
+                <th className="px-6 py-3">Company Name</th>
+                <th className="px-6 py-3">Products / Services</th>
+                <th className="px-6 py-3">Logo</th>
+                <th className="px-6 py-3">Description</th>
+                <th className="px-6 py-3">Contact Info</th>
+                <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -203,15 +177,22 @@ const RegistrationAndProfileManagementIndex = () => {
                   key={company.id}
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{company.name}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                    {company.name}
+                  </td>
                   <td className="px-6 py-4">{company.products}</td>
                   <td className="px-6 py-4">
-                    <img src={company.logo} alt={`${company.name} Logo`} className="h-8 w-auto" />
+                    <img src={company.logo} alt="logo" className="h-8" />
                   </td>
                   <td className="px-6 py-4">{company.description}</td>
                   <td className="px-6 py-4 whitespace-pre-line">{company.contact}</td>
                   <td className="px-6 py-4 text-right">
-                    <a href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                    <button
+                      onClick={() => openEditModal(company)}
+                      className="text-blue-600 hover:underline dark:text-blue-500"
+                    >
+                      Edit
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -223,4 +204,4 @@ const RegistrationAndProfileManagementIndex = () => {
   );
 };
 
-export default RegistrationAndProfileManagementIndex;
+export default CompanyManagementPage;

@@ -42,6 +42,7 @@ const ExhibitorSearchAndInteractionIndex = () => {
   const [exhibitors, setExhibitors] = useState(initialExhibitors);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [editingExhibitor, setEditingExhibitor] = useState(null);
 
   const filteredExhibitors = exhibitors.filter((exhibitor) =>
     `${exhibitor.name} ${exhibitor.category} ${exhibitor.products}`
@@ -50,7 +51,8 @@ const ExhibitorSearchAndInteractionIndex = () => {
   );
 
   const formik = useFormik({
-    initialValues: {
+    enableReinitialize: true,
+    initialValues: editingExhibitor || {
       name: '',
       category: '',
       products: '',
@@ -59,15 +61,35 @@ const ExhibitorSearchAndInteractionIndex = () => {
     },
     validationSchema,
     onSubmit: (values, { resetForm }) => {
-      const newExhibitor = {
-        id: exhibitors.length + 1,
-        ...values,
-      };
-      setExhibitors([...exhibitors, newExhibitor]);
+      if (editingExhibitor) {
+        const updatedExhibitors = exhibitors.map((ex) =>
+          ex.id === editingExhibitor.id ? { ...ex, ...values } : ex
+        );
+        setExhibitors(updatedExhibitors);
+      } else {
+        const newExhibitor = {
+          id: exhibitors.length + 1,
+          ...values,
+        };
+        setExhibitors([...exhibitors, newExhibitor]);
+      }
+
       resetForm();
+      setEditingExhibitor(null);
       setShowModal(false);
     },
   });
+
+  const handleEdit = (exhibitor) => {
+    setEditingExhibitor(exhibitor);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingExhibitor(null);
+    formik.resetForm();
+  };
 
   return (
     <AuthenticatedLayout>
@@ -75,7 +97,10 @@ const ExhibitorSearchAndInteractionIndex = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold">Exhibitor Search & Interaction</h1>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingExhibitor(null);
+              setShowModal(true);
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Create Exhibitor
@@ -87,12 +112,14 @@ const ExhibitorSearchAndInteractionIndex = () => {
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-lg w-full max-w-xl relative">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white"
               >
                 ✕
               </button>
-              <h2 className="text-xl font-semibold mb-4 dark:text-white">Create Exhibitor</h2>
+              <h2 className="text-xl font-semibold mb-4 dark:text-white">
+                {editingExhibitor ? 'Edit Exhibitor' : 'Create Exhibitor'}
+              </h2>
               <form onSubmit={formik.handleSubmit} className="space-y-4">
                 {[
                   { label: 'Exhibitor Name', name: 'name', type: 'text' },
@@ -121,7 +148,7 @@ const ExhibitorSearchAndInteractionIndex = () => {
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={handleCloseModal}
                     className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
                   >
                     Cancel
@@ -130,7 +157,7 @@ const ExhibitorSearchAndInteractionIndex = () => {
                     type="submit"
                     className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                   >
-                    Submit
+                    {editingExhibitor ? 'Update' : 'Submit'}
                   </button>
                 </div>
               </form>
@@ -180,7 +207,12 @@ const ExhibitorSearchAndInteractionIndex = () => {
                       >
                         Email
                       </button>
-                      <button className="text-indigo-600 hover:underline">Chat</button>
+                      <button
+                        onClick={() => handleEdit(exhibitor)}
+                        className="text-yellow-600 hover:underline"
+                      >
+                        Edit
+                      </button>
                     </td>
                   </tr>
                 ))

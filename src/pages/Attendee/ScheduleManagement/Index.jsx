@@ -38,17 +38,17 @@ const ScheduleManagementAttendeeIndex = () => {
   const [sessions, setSessions] = useState(initialSessions);
   const [bookmarked, setBookmarked] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [editingSession, setEditingSession] = useState(null);
 
   const toggleBookmark = (id) => {
-    if (bookmarked.includes(id)) {
-      setBookmarked(bookmarked.filter((item) => item !== id));
-    } else {
-      setBookmarked([...bookmarked, id]);
-    }
+    setBookmarked((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
   };
 
   const formik = useFormik({
-    initialValues: {
+    enableReinitialize: true,
+    initialValues: editingSession || {
       title: '',
       speaker: '',
       time: '',
@@ -56,15 +56,35 @@ const ScheduleManagementAttendeeIndex = () => {
     },
     validationSchema,
     onSubmit: (values, { resetForm }) => {
-      const newSession = {
-        id: sessions.length + 1,
-        ...values,
-      };
-      setSessions([...sessions, newSession]);
+      if (editingSession) {
+        const updatedSessions = sessions.map((session) =>
+          session.id === editingSession.id ? { ...editingSession, ...values } : session
+        );
+        setSessions(updatedSessions);
+      } else {
+        const newSession = {
+          id: sessions.length + 1,
+          ...values,
+        };
+        setSessions([...sessions, newSession]);
+      }
+
       resetForm();
+      setEditingSession(null);
       setShowModal(false);
     },
   });
+
+  const handleEdit = (session) => {
+    setEditingSession(session);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    formik.resetForm();
+    setEditingSession(null);
+    setShowModal(false);
+  };
 
   return (
     <AuthenticatedLayout>
@@ -72,7 +92,10 @@ const ScheduleManagementAttendeeIndex = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold">Attendee Schedule Management</h1>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingSession(null);
+              setShowModal(true);
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Create Session
@@ -84,12 +107,14 @@ const ScheduleManagementAttendeeIndex = () => {
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-md shadow-lg w-full max-w-xl relative">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white"
               >
                 ✕
               </button>
-              <h2 className="text-xl font-semibold mb-4 dark:text-white">Create Session</h2>
+              <h2 className="text-xl font-semibold mb-4 dark:text-white">
+                {editingSession ? 'Edit Session' : 'Create Session'}
+              </h2>
               <form onSubmit={formik.handleSubmit} className="space-y-4">
                 {[
                   { label: 'Session Title', name: 'title', type: 'text' },
@@ -117,7 +142,7 @@ const ScheduleManagementAttendeeIndex = () => {
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={handleCloseModal}
                     className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
                   >
                     Cancel
@@ -126,7 +151,7 @@ const ScheduleManagementAttendeeIndex = () => {
                     type="submit"
                     className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                   >
-                    Submit
+                    {editingSession ? 'Update' : 'Submit'}
                   </button>
                 </div>
               </form>
@@ -178,6 +203,12 @@ const ScheduleManagementAttendeeIndex = () => {
                       className="text-green-600 hover:underline"
                     >
                       Notify Me
+                    </button>
+                    <button
+                      onClick={() => handleEdit(session)}
+                      className="text-indigo-600 hover:underline"
+                    >
+                      Edit
                     </button>
                   </td>
                 </tr>
